@@ -10,4 +10,4 @@ To get started, clone this repository into any directory you feel comfortable do
 yarn setup
 ```
 
-[I dont have yarn](http://yarn.org)
+[I dont have yarn](http://yarnpkg.com)

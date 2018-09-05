@@ -1,0 +1,11 @@
+[submodule "osf.io"]
+	path = osf.io
+	url = https://github.com/CenterForOpenScience/osf.io
+    branch = develop
+[submodule "waterbutler"]
+	path = waterbutler
+	url = https://github.com/CenterForOpenScience/waterbutler
+    branch = next
+[submodule "modular-file-renderer"]
+	path = modular-file-renderer
+	url = https://github.com/CenterForOpenScience/modular-file-renderer
