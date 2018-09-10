@@ -11,3 +11,9 @@ yarn setup
 ```
 
 [I dont have yarn](http://yarnpkg.com)
+
+```
+launchctl load io.cos.plist
+
+launchctl start io.cos.plist
+```
