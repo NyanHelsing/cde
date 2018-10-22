@@ -1,0 +1,342 @@
+#!/usr/local/bin/node
+
+console.log(`
+  OOO
+ O   O
+  OOO   COS Development Environment
+`);
+
+const util = require('util');
+const { spawn } = require('child_process');
+
+const TEN_MEGA_BYTE = 1024 * 1024 * 10;
+
+process.on('unhandledRejection', (reason) => {
+    console.log('Reason: ' + reason);
+});
+
+async function bulldoze() {
+    // Up the OSF and its dependencies from a fresh clone.
+
+    // If we get here, we're certain no docker processes are running what is listening on these
+    // ports.
+    // Using this option has the potential to CRASH docker if it is running any of the processes
+    // listening on these ports. If you are unsure about this, look into
+
+    /*
+    await exec(`
+        lsof -n -i tcp:5432 | grep LISTEN | awk '{ print $2 }' | xargs kill
+        lsof -n -i tcp:8000 | grep LISTEN | awk '{ print $2 }' | xargs kill
+        lsof -n -i tcp:4200 | grep LISTEN | awk '{ print $2 }' | xargs kill
+    `);
+    */
+}
+
+const fs = require('fs');
+const cde_file = `./.cde`
+
+if (!fs.existsSync(cde_file)) {
+    // The .cde file does not exist, so we assume this is the first start
+    console.log(`
+        It looks like this is the first time running the CDE!
+
+        For help, check out the README.md and README-docker-compose.md in the osf.io repository,
+        or check out the osf.io readthedocs page.
+    `);
+} else {
+    // The .cde file exists, let's assume it's not corrupted, and start figuring out what state the environment is in.
+    var content = fs.readFileSync("content.txt");
+}
+
+(async () => {
+
+    console.log(`Building Requirements ...`)
+
+    await new Promise((resolve, reject) => {
+
+        const requirements = spawn(`
+            docker-compose \
+                -f ./docker-compose.yml \
+                -f ./waterbutler/docker-compose.yml \
+                up \
+                requirements \
+                mfr_requirements \
+                wb_requirements
+        `, {
+            stdio: 'inherit',
+            shell: true
+        })
+
+        requirements.on('data', data => {
+            console.log(`${data}`); // Forces data to be a string
+        });
+
+        requirements.on('exit', data => {
+            console.log(`Requirements built.`)
+            resolve(true);
+        });
+
+
+    });
+
+    console.log(`Building Assets ...`)
+
+    const assets = spawn(`
+        docker-compose \
+            -f ./docker-compose.yml \
+            up \
+            assets \
+            admin_assets
+    `, {
+        stdio: 'inherit',
+        shell: true
+    })
+
+    assets.on('data', data => {
+        console.log(`${data}`); // Forces data to be a string
+    });
+
+    assets.on('exit', data => {
+        console.log(`Assets Exited!`)
+        return;
+    });
+
+    const ember_osf_web = spawn(`
+        cd ember-osf-web && nvm use 8 && yarn && ember s
+    `, {
+        stdio: 'inherit',
+        shell: true
+    })
+
+    ember_osf_web.on('data', data => {
+        console.log(`${data}`); // Forces data to be a string
+    });
+
+    ember_osf_web.on('exit', data => {
+        console.log(`Ember is no longer being served!`)
+        return;
+    });
+
+    console.log(`Starting Databases ...`);
+
+    const databases = spawn(`
+        docker-compose \
+            -f ./docker-compose.yml \
+            -f ./waterbutler/docker-compose.yml \
+            up \
+            postgres \
+            rabbitmq \
+            elasticsearch \
+            mongo
+    `, {
+        stdio: 'inherit',
+        shell: true
+    })
+
+    databases.on('data', data => {
+        console.log(`${data}`); // Forces data to be a string
+    });
+
+    databases.on('exit', data => {
+        console.log(`Something happened to the services!`)
+    });
+
+    await new Promise((resolve, reject) => {
+
+        const makemigrations = spawn(`
+            docker-compose \
+                -f ./docker-compose.yml \
+                -f ./waterbutler/docker-compose.yml \
+                run --rm web python manage.py makemigrations
+        `, {
+            stdio: 'inherit',
+            shell: true
+        });
+        makemigrations.on('data', data => {
+            console.log(`${data}`); // Forces data to be a string
+        });
+
+        makemigrations.on('exit', data => {
+            console.log(`Migrations Finished!`)
+            resolve();
+        });
+    });
+
+    await new Promise((resolve, reject) => {
+
+        const migrate = spawn(`
+            docker-compose \
+                -f ./docker-compose.yml \
+                -f ./waterbutler/docker-compose.yml \
+                run --rm web python manage.py migrate
+        `, {
+            stdio: 'inherit',
+            shell: true
+        });
+        migrate.on('data', data => {
+            console.log(`${data}`); // Forces data to be a string
+        });
+
+        migrate.on('exit', data => {
+            console.log(`Migrations Finished!`)
+            resolve();
+        });
+    });
+
+    await new Promise((resolve, reject) => {
+
+        const populate_institutions = spawn(`
+            docker-compose \
+                -f ./docker-compose.yml \
+                -f ./waterbutler/docker-compose.yml \
+                run --rm web python -m scripts.populate_institutions test
+        `, {
+            stdio: 'inherit',
+            shell: true
+        });
+        populate_institutions.on('data', data => {
+            console.log(`${data}`); // Forces data to be a string
+        });
+
+        populate_institutions.on('exit', data => {
+            console.log(`Migrations Finished!`)
+            resolve();
+        });
+    });
+
+    await new Promise((resolve, reject) => {
+
+        const update_taxonomies = spawn(`
+            docker-compose \
+                -f ./docker-compose.yml \
+                -f ./waterbutler/docker-compose.yml \
+                run --rm web python -m scripts.update_taxonomies
+        `, {
+            stdio: 'inherit',
+            shell: true
+        });
+        update_taxonomies.on('data', data => {
+            console.log(`${data}`); // Forces data to be a string
+        });
+
+        update_taxonomies.on('exit', data => {
+            console.log(`Migrations Finished!`)
+            resolve();
+        });
+    });
+
+    await new Promise((resolve, reject) => {
+
+        const populate_fake_preprint_providers = spawn(`
+            docker-compose \
+                -f ./docker-compose.yml \
+                -f ./waterbutler/docker-compose.yml \
+                run --rm web python manage.py populate_fake_preprint_providers
+        `, {
+            stdio: 'inherit',
+            shell: true
+        });
+        populate_fake_preprint_providers.on('data', data => {
+            console.log(`${data}`); // Forces data to be a string
+        });
+
+        populate_fake_preprint_providers.on('exit', data => {
+            console.log(`Migrations Finished!`)
+            resolve();
+        });
+    });
+
+    await new Promise((resolve, reject) => {
+
+        const parse_citation_styles = spawn(`
+            docker-compose \
+                -f ./docker-compose.yml \
+                -f ./waterbutler/docker-compose.yml \
+                run --rm web python -m scripts.parse_citation_styles
+        `, {
+            stdio: 'inherit',
+            shell: true
+        });
+        parse_citation_styles.on('data', data => {
+            console.log(`${data}`); // Forces data to be a string
+        });
+
+        parse_citation_styles.on('exit', data => {
+            console.log(`Migrations Finished!`)
+            resolve();
+        });
+    });
+
+    await new Promise((resolve, reject) => {
+
+        const register_oauth_scopes = spawn(`
+            docker-compose \
+                -f ./docker-compose.yml \
+                -f ./waterbutler/docker-compose.yml \
+                run --rm web python -m scripts.register_oauth_scopes
+        `, {
+            stdio: 'inherit',
+            shell: true
+        });
+        register_oauth_scopes.on('data', data => {
+            console.log(`${data}`); // Forces data to be a string
+        });
+
+        register_oauth_scopes.on('exit', data => {
+            console.log(`Migrations Finished!`)
+            resolve();
+        });
+    });
+
+    const services = spawn(`
+        docker-compose \
+            -f ./docker-compose.yml \
+            -f ./waterbutler/docker-compose.yml \
+            up --no-deps \
+            mfr \
+            wb \
+            fakecas \
+            sharejs
+    `, {
+        stdio: 'inherit',
+        shell: true
+    })
+
+    services.on('data', data => {
+        console.log(`${data}`); // Forces data to be a string
+    });
+
+    services.on('exit', data => {
+        console.log(`Something happened to the services!`)
+    });
+
+    const apps = spawn(`
+        docker-compose \
+            -f ./docker-compose.yml \
+            -f ./waterbutler/docker-compose.yml \
+            up -d --no-deps \
+            worker \
+            web \
+            api \
+            admin \
+            preprints \
+            registries \
+            unoconv \
+    `, {
+        stdio: 'inherit',
+        shell: true
+    });
+    apps.on('data', data => {
+        console.log(`${data}`); // Forces data to be a string
+    });
+
+    apps.on('exit', data => {
+        console.log(`Assets Exited!`)
+        return;
+    });
+
+
+
+    return;
+
+})()

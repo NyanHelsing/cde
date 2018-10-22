@@ -45,6 +45,35 @@ volumes:
 
 services:
 
+  isp:
+    build: ./isp/
+    image: isp:develop
+    volumes:
+      - './isp:/code'
+    command: ./node_modules/.bin/ember s
+    ports:
+      - target: 4200
+        published: 4200
+        protocol: tcp
+        mode: host
+    depends_on:
+      - jam
+
+  jam:
+    build: ./jamdb/
+    image: jam:develop
+    volumes:
+      - './jamdb:/code'
+    ports:
+      - target: 1212
+        published: 1212
+        protocol: tcp
+        mode: host
+    depends_on:
+      - mongo
+      - elasticsearch
+
+
   ###################
   # Shared Services #
   ###################
@@ -140,9 +169,9 @@ services:
     ports:
       - 7778:7778
     env_file:
-      - .docker-compose.mfr.env
+      - ./modular-file-renderer/.docker-compose.env
     volumes:
-      - ./modular-file-renderer:/code
+      - ./modular-file-renderer:/code:cached
       - mfr_requirements_vol:/usr/local/lib/python3.5
       - mfr_requirements_local_bin_vol:/usr/local/bin
       - wb_tmp_vol:/tmp
@@ -188,7 +217,7 @@ services:
     ports:
       - 7777:7777
     env_file:
-      - .docker-compose.wb.env
+      - ./waterbutler/.docker-compose.env
     volumes:
       - wb_requirements_vol:/usr/local/lib/python3.5
       - wb_requirements_local_bin_vol:/usr/local/bin
@@ -206,7 +235,7 @@ services:
     environment:
       C_FORCE_ROOT: 1
     env_file:
-      - .docker-compose.wb.env
+      - ./waterbutler/.docker-compose.env
     volumes:
       - wb_requirements_vol:/usr/local/lib/python3.5
       - osfstoragecache_vol:/code/website/osfstoragecache
@@ -249,9 +278,6 @@ services:
       - yarn --frozen-lockfile &&
         yarn start --host 0.0.0.0 --port 4200 --live-reload-port 41953
     restart: unless-stopped
-    depends_on:
-      - api
-      - web
     environment:
       - BACKEND=local
     expose:
@@ -261,8 +287,7 @@ services:
       - 4200:4200
       - 41953:41953
     volumes:
-      - ./ember-osf-web:/code
-      - ember_osf_web_dist_vol:/code/dist
+      - ./ember-osf-web:/code:cached
     stdin_open: true
 
   #############
@@ -365,14 +390,16 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: api.base.settings
     volumes:
-      - ./osf.io:/code
+      - ./osf.io:/code:cached
       - osf_requirements_vol:/python2.7
 
   assets:
     image: quay.io/centerforopenscience/osf:develop
-    command: invoke assets -dw
+    command: 
+        invoke assets -dw
     restart: unless-stopped
     environment:
+      GIT_DIR: /code
       DJANGO_SETTINGS_MODULE: api.base.settings
     volumes:
       - ./osf.io:/code
@@ -388,7 +415,7 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: admin.base.settings
     volumes:
-      - ./osf.io:/code
+      - ./osf.io:/code:cached
       - osf_requirements_vol:/usr/local/lib/python2.7
       - osf_node_modules_vol:/code/node_modules  # needed due to admin references of ../webpack.<...>.js configurations.
       - osf_bower_components_vol:/code/website/static/vendor/bower_components
@@ -405,7 +432,7 @@ services:
       - mongo
       - web
     env_file:
-      - .docker-compose.sharejs.env
+      - ./osf.io/.docker-compose.sharejs.env
     stdin_open: true
 
 #  beat:
@@ -418,7 +445,7 @@ services:
 #      C_FORCE_ROOT: 1
 #      DJANGO_SETTINGS_MODULE: api.base.settings
 #    env_file:
-#      - .docker-compose.env
+#      - ./osf.io/.docker-compose.env
 #    volumes:
 #      - osf_requirements_vol:/usr/local/lib/python2.7
 #      - osf_bower_components_vol:/code/website/static/vendor/bower_components
@@ -437,9 +464,9 @@ services:
       DJANGO_SETTINGS_MODULE: api.base.settings
 #      BROKER_URL: amqp://guest:guest@192.168.168.167:5671/
     env_file:
-      - .docker-compose.env
+      - ./osf.io/.docker-compose.env
     volumes:
-      - ./osf.io:/code
+      - ./osf.io:/code:cached
       - osf_requirements_vol:/usr/local/lib/python2.7
       - osf_bower_components_vol:/code/website/static/vendor/bower_components
       - osf_node_modules_vol:/code/node_modules
@@ -461,10 +488,10 @@ services:
       - rabbitmq
       - elasticsearch
     env_file:
-      - .docker-compose.env
+      - ./osf.io/.docker-compose.env
     stdin_open: true
     volumes:
-      - ./osf.io:/code
+      - ./osf.io:/code:cached
       - osf_requirements_vol:/usr/local/lib/python2.7
       - osf_bower_components_vol:/code/website/static/vendor/bower_components
       - osf_node_modules_vol:/code/node_modules
@@ -483,9 +510,10 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: api.base.settings
     env_file:
-      - .docker-compose.env
+      - ./osf.io/.docker-compose.env
+
     volumes:
-      - ./osf.io:/code
+      - ./osf.io:/code:cached
       - osf_requirements_vol:/usr/local/lib/python2.7
       - osf_bower_components_vol:/code/website/static/vendor/bower_components
       - osf_node_modules_vol:/code/node_modules
@@ -504,14 +532,14 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: api.base.settings
     env_file:
-      - .docker-compose.env
-      - .docker-compose.sharejs.env
+      - ./osf.io/.docker-compose.env
+      - ./osf.io/.docker-compose.sharejs.env
     volumes:
-      - ./osf.io:/code
+      - ./osf.io:/code:cached
       - osf_requirements_vol:/usr/local/lib/python2.7
       - osf_bower_components_vol:/code/website/static/vendor/bower_components
       - osf_node_modules_vol:/code/node_modules
-      - ember_osf_web_dist_vol:/ember_osf_web
+      - ./ember-osf-web/dist:/ember_osf_web:cached
       - preprints_dist_vol:/preprints
       - registries_dist_vol:/registries
       - reviews_dist_vol:/reviews

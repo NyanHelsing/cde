@@ -1,0 +1,124 @@
+#!/usr/bin/env node
+
+
+const args = process.argv.map(value => value);
+
+const node_location = args[0];
+const script_location = args[1];
+const command = args[2];
+
+const valid_repos = [
+    "osf.io",
+    "waterbutler",
+    ""
+];
+
+// <GS_Mods>
+
+
+// Takes a mapping of conditions to return a mapping of items in the
+// subject array that meet the given condition. Build an object based on each item
+// in the subject array. For each item in the array, check all conditions to see
+// if the item can be placed in one of the partitions
+Array.prototype.classify = function(conditions) {
+
+    function conditionalInvoke(result, key, value, condition, operation) {
+        // Do not modify result.
+        if (condition(value)) {
+            const new_value = operation(value);
+            return {
+                ...result,
+                [key]: [...result[key], new_value]
+            }
+        } else {
+            return result;
+        }
+    }
+
+    function conditionalConcat(result, key, value, condition) {
+        conditionalInvoke(result, key, value, condition, value => value)
+    }
+
+    function assign
+
+    Object.entries(conditions).reduce(conditionalConcat)
+
+    return this.reduce(
+        (acc, val) => ({
+            ...acc,
+            [val]: Object.entries(conditions).reduce(
+                (acc, [key, val]) => conditions[key](val) ?
+                    {
+                        ...acc,
+                        [key]: acc[key].concat(val)
+                    } :
+                    acc
+        )})
+    );
+};
+
+Array.prototype.broadcast = function(operations) {
+    return this.reduce(
+        (acc, val) => ({
+            ...acc,
+            [val]: Object.entries(operations).reduce(
+                (acc, [op_key, op]) => {
+                    const op_val = op(val)
+                    return op_val ? {...acc, [key]: op(val)} : acc
+                }
+            )
+        })
+    );
+};
+
+// </GS_Mods>
+
+
+// [].map({}).tap(log);
+[].dispatch().map({})
+
+// ??
+
+
+// 
+
+if (command === "go") {
+
+
+    const command_args = args.slice(3)
+
+    // Partition the passed in arguments
+    const {passed_repos, passed_options} = command_args.classify({
+        passed_repos: val => !val.startsWith("-"),
+        passed_options: val => val.startsWith("-")
+    });
+
+    const args[2] === "all" ?  all_repos : ""
+
+    const repos_to_migrate = passed_repos.reduce((acc, passed_repo) => {
+        [
+            "osf.io",
+            "waterbutler",
+            "modular_file_renderer"
+        ].includes(passed_repo);
+    )
+
+    args[0];
+
+}
+
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
+
+process.argv.forEach(function (val, index, array) {
+  console.log(index + ': ' + val);
+});
+
+(async () => {
+    await exec(`pushd ${args[1]} && pwd && popd`);
+
+    // copy recurse, noclobber
+    exec("cp -rn ../osf.io");
+})()
+
+

@@ -9,3 +9,15 @@
 [submodule "modular-file-renderer"]
 	path = modular-file-renderer
 	url = https://github.com/CenterForOpenScience/modular-file-renderer
+[submodule "ember-osf-web"]
+	path = ember-osf-web
+	url = git@github.com:CenterForOpenScience/ember-osf-web.git
+[submodule "isp"]
+	path = isp
+	url = git@github.com:CenterForOpenScience/isp.git
+[submodule "jamdb"]
+	path = jamdb
+	url = https://github.com/CenterForOpenScience/jamdb
+[submodule "experimenter"]
+	path = experimenter
+	url = git@github.com:CenterForOpenScience/experimenter.git
