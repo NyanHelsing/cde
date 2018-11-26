@@ -58,6 +58,13 @@ services:
         mode: host
     depends_on:
       - jam
+      - experimenter
+
+  experimenter:
+    build: ./experimenter
+    image: experimenter:local
+    volumes:
+      - './experimenter:/code'
 
   jam:
     build: ./jamdb/
@@ -108,10 +115,10 @@ services:
 
   mongo:
     image: mongo:3.4
-    command: 
+    command:
       - /bin/bash
-      - -c 
-      - openssl req -newkey rsa:2048 -new -x509 -days 9999 -nodes 
+      - -c
+      - openssl req -newkey rsa:2048 -new -x509 -days 9999 -nodes
           -subj "/C=US/ST=Virginia/L=Charlottesville/O=COS/OU=Test/CN=192.168.168.167"
           -out /etc/ssl/mongodb.crt -keyout /etc/ssl/mongodb.key &&
         cat /etc/ssl/mongodb.key /etc/ssl/mongodb.crt > /etc/ssl/mongodb.pem &&
@@ -197,20 +204,22 @@ services:
   ###############
 
   wb_requirements:
+    build: ./waterbutler/
     image: quay.io/centerforopenscience/wb:develop
     command:
       - /bin/bash
       - -c
       - invoke install --develop &&
-        (python -m compileall /usr/local/lib/python3.5 || true) &&
-        rm -Rf /python3.5/* &&
-        cp -Rf -p /usr/local/lib/python3.5 /
+        (python -m compileall /usr/local/lib/python3.6 || true) &&
+        rm -Rf /python3.6/* &&
+        cp -Rf -p /usr/local/lib/python3.6 /
     restart: 'no'
     volumes:
-      - wb_requirements_vol:/python3.5
+      - wb_requirements_vol:/python3.6
       - wb_requirements_local_bin_vol:/usr/local/bin
 
   wb:
+    build: ./waterbutler/
     image: quay.io/centerforopenscience/wb:develop
     command: invoke server
     restart: unless-stopped
@@ -219,13 +228,14 @@ services:
     env_file:
       - ./waterbutler/.docker-compose.env
     volumes:
-      - wb_requirements_vol:/usr/local/lib/python3.5
+      - wb_requirements_vol:/usr/local/lib/python3.6
       - wb_requirements_local_bin_vol:/usr/local/bin
       - osfstoragecache_vol:/code/website/osfstoragecache
       - wb_tmp_vol:/tmp
     stdin_open: true
 
   wb_worker:
+    build: ./waterbutler/
     image: quay.io/centerforopenscience/wb:develop
     command: invoke celery
     restart: unless-stopped
@@ -237,7 +247,7 @@ services:
     env_file:
       - ./waterbutler/.docker-compose.env
     volumes:
-      - wb_requirements_vol:/usr/local/lib/python3.5
+      - wb_requirements_vol:/usr/local/lib/python3.6
       - osfstoragecache_vol:/code/website/osfstoragecache
       - wb_tmp_vol:/tmp
     stdin_open: true
