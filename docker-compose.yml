@@ -3,6 +3,8 @@
 version: '3.4'
 
 volumes:
+  jam_config_vol:
+    external: false
   postgres_data_vol:
     external: false
   mongo_data_vol:
@@ -53,30 +55,56 @@ services:
     command: ./node_modules/.bin/ember s
     ports:
       - target: 4200
-        published: 4200
+        published: 4202
         protocol: tcp
         mode: host
     depends_on:
-      - jam
       - experimenter
 
   experimenter:
     build: ./experimenter
     image: experimenter:local
+    env_file:
+      - ./experimenter/.env
     volumes:
       - './experimenter:/code'
+    ports:
+      - target: 4200
+        published: 4201
+        protocol: tcp
+        mode: host
+    depends_on:
+      - experimenter_setup
+
+  experimenter_setup:
+    build: ./jam-setup/
+    volumes:
+      - 'jam_config_vol:/etc/jam'
+    env_file:
+      - ./experimenter/.env
+    image: experimenter_setup:develop
+    depends_on:
+      - jam
+
+  cas:
+    build: ./cas-overlay/
+    image: birdbrained/cas:local
+    depends_on:
+      - postgres
 
   jam:
     build: ./jamdb/
     image: jam:develop
     volumes:
       - './jamdb:/code'
+      - 'jam_config_vol:/etc/jam'
     ports:
       - target: 1212
         published: 1212
         protocol: tcp
         mode: host
     depends_on:
+      - web
       - mongo
       - elasticsearch
 
@@ -84,6 +112,14 @@ services:
   ###################
   # Shared Services #
   ###################
+
+  elasticsearchh:
+    image: elasticsearch:1.7
+    ports:
+      - 9200:9200
+    volumes:
+      - elasticsearch_data_vol:/usr/share/elasticsearch/data
+    stdin_open: true
 
   elasticsearch:
     image: elasticsearch:2
@@ -183,6 +219,9 @@ services:
       - mfr_requirements_local_bin_vol:/usr/local/bin
       - wb_tmp_vol:/tmp
     stdin_open: true
+    depends_on:
+      - mfr_requirements
+      - unoconv
 
   unoconv:
     image: centerforopenscience/unoconv
@@ -233,6 +272,8 @@ services:
       - osfstoragecache_vol:/code/website/osfstoragecache
       - wb_tmp_vol:/tmp
     stdin_open: true
+    depends_on:
+      - wb_requirements
 
   wb_worker:
     build: ./waterbutler/
@@ -405,11 +446,11 @@ services:
 
   assets:
     image: quay.io/centerforopenscience/osf:develop
-    command: 
+    command:
         invoke assets -dw
     restart: unless-stopped
     environment:
-      GIT_DIR: /code
+      GIT_DIR: /tmp
       DJANGO_SETTINGS_MODULE: api.base.settings
     volumes:
       - ./osf.io:/code
@@ -440,7 +481,6 @@ services:
       - 7007:7007
     depends_on:
       - mongo
-      - web
     env_file:
       - ./osf.io/.docker-compose.sharejs.env
     stdin_open: true
@@ -497,6 +537,7 @@ services:
       - postgres
       - rabbitmq
       - elasticsearch
+      - admin_assets
     env_file:
       - ./osf.io/.docker-compose.env
     stdin_open: true
@@ -539,6 +580,13 @@ services:
       - postgres
       - rabbitmq
       - elasticsearch
+      - api
+      - admin
+      - wb
+      - mfr
+      - sharejs
+      - ember_osf_web
+      - requirements
     environment:
       DJANGO_SETTINGS_MODULE: api.base.settings
     env_file:

@@ -15,9 +15,15 @@
 [submodule "isp"]
 	path = isp
 	url = git@github.com:CenterForOpenScience/isp.git
+[submodule "jam-setup"]
+	path = jam-setup
+	url = https://github.com/birdbrained/jam-setup.git
 [submodule "jamdb"]
 	path = jamdb
 	url = https://github.com/CenterForOpenScience/jamdb
 [submodule "experimenter"]
 	path = experimenter
 	url = git@github.com:CenterForOpenScience/experimenter.git
+[submodule "cas-overlay"]
+	path = cas-overlay
+	url = git@github.com:CenterForOpenScience/cas-overlay.git
