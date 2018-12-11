@@ -1,29 +1,35 @@
 [submodule "osf.io"]
 	path = osf.io
-	url = https://github.com/CenterForOpenScience/osf.io
-    branch = develop
+	url = https://github.com/birdbrained/osf.io
+    branch = next
 [submodule "waterbutler"]
 	path = waterbutler
-	url = https://github.com/CenterForOpenScience/waterbutler
+	url = https://github.com/birdbrained/waterbutler
     branch = next
 [submodule "modular-file-renderer"]
 	path = modular-file-renderer
-	url = https://github.com/CenterForOpenScience/modular-file-renderer
+	url = https://github.com/birdbrained/modular-file-renderer
 [submodule "ember-osf-web"]
 	path = ember-osf-web
-	url = git@github.com:CenterForOpenScience/ember-osf-web.git
+	url = https://github.com/birdbrained/ember-osf-web.git
+    branch = next
 [submodule "isp"]
 	path = isp
-	url = git@github.com:CenterForOpenScience/isp.git
+	url = https://github.com/birdbrained/isp.git
+    branch = next
 [submodule "jam-setup"]
 	path = jam-setup
 	url = https://github.com/birdbrained/jam-setup.git
+    branch = next
 [submodule "jamdb"]
 	path = jamdb
-	url = https://github.com/CenterForOpenScience/jamdb
+	url = https://github.com/birdbrained/jamdb
+    branch = next
 [submodule "experimenter"]
 	path = experimenter
-	url = git@github.com:CenterForOpenScience/experimenter.git
+	url = https://github.com/birdbrained/experimenter.git
+    branch = next
 [submodule "cas-overlay"]
 	path = cas-overlay
-	url = git@github.com:CenterForOpenScience/cas-overlay.git
+	url = https://github.com/birdbrained/cas-overlay.git
+    branch = next
