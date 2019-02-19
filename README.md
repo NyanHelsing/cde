@@ -4,20 +4,13 @@ Get started developing on COS software projects quickly and easily with the COS 
 
 This repository contains submodule links to all of the projects worked on at COS, and all the docker config you'll need to get up and running with OSF, SHARE, WaterButler, MFR, Lookit and ISP!
 
-<<<<<<< HEAD
+# Before you start
+
 Before getting started, be sure that the docker daemon is installed and up and running.
 
 [Getting Started with Docker](https://www.docker.com/get-started)
 
-To get started, clone this repository into any directory you feel comfortable doing so, and run:
-
-```
-./install
-```
-
-This script will retrieve the latest Docker images, Run migrations, and start and daemonize the containers that the OSF requires to run.
-=======
-To get started, clone this repository into any directory you feel comfortable doing so.
+To get the code, clone this repository into any directory you feel comfortable doing so.
 
 [Cloning a repository](https://www.wikihow.com/Clone-a-Repository-on-Github)
 [What's a directory?](https://en.wikipedia.org/wiki/Directory_structure)
@@ -43,11 +36,16 @@ This repository  also ties the submodules to a branch. To fetch the latest commi
 git submodule update --remote
 ```
 
+> Note:  these are  all currently set to `next`
 
-> Note:  these are  all currently set to `next`, and
+# Running OSF Services
 
-[I dont have yarn](http://yarnpkg.com)
->>>>>>> 97d2592ca8149dd52258f81587d3dbc25e662d77
+```
+./install
+```
+
+This script will retrieve the latest Docker images, Run migrations, and start and daemonize the containers that the OSF requires to run.
+
 
 To stop the containers that are started in this script run
 ```
