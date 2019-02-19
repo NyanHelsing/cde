@@ -50,6 +50,20 @@ if (!fs.existsSync(cde_file)) {
 
 (async () => {
 
+    /*
+    console.log("pulling latest images");
+
+    await new Promise(resolve => {
+        const pull = spawn(`docker-compose pull`);
+        pull.on(`data`, data => {
+            console.log(`${data}`);
+        })
+        pull.on(`exit`, data => {
+            resolve(true);
+        });
+    });
+    */
+
     console.log(`Building Requirements ...`)
 
     await new Promise((resolve, reject) => {
@@ -79,67 +93,77 @@ if (!fs.existsSync(cde_file)) {
 
     });
 
-    console.log(`Building Assets ...`)
+    await Promise.all([
+        new Promise(resolve => {
+            console.log(`Building Assets ...`)
 
-    const assets = spawn(`
-        docker-compose \
-            -f ./docker-compose.yml \
-            up \
-            assets \
-            admin_assets
-    `, {
-        stdio: 'inherit',
-        shell: true
-    })
+            const assets = spawn(`
+                docker-compose \
+                    -f ./docker-compose.yml \
+                    up \
+                    assets \
+                    admin_assets
+            `, {
+                stdio: 'inherit',
+                shell: true
+            })
 
-    assets.on('data', data => {
-        console.log(`${data}`); // Forces data to be a string
-    });
+            assets.on('data', data => {
+                console.log(`${data}`); // Forces data to be a string
+            });
 
-    assets.on('exit', data => {
-        console.log(`Assets Exited!`)
-        return;
-    });
+            assets.on('exit', data => {
+                console.log(`Assets Exited!`)
+                return;
+            });
+        }),
 
-    const ember_osf_web = spawn(`
-        cd ember-osf-web && nvm use 8 && yarn && ember s
-    `, {
-        stdio: 'inherit',
-        shell: true
-    })
+        new Promise(resolve => {
 
-    ember_osf_web.on('data', data => {
-        console.log(`${data}`); // Forces data to be a string
-    });
+            const ember_osf_web = spawn(`
+                cd ember-osf-web && nvm use 8 && yarn && ember s
+            `, {
+                stdio: 'inherit',
+                shell: true
+            })
 
-    ember_osf_web.on('exit', data => {
-        console.log(`Ember is no longer being served!`)
-        return;
-    });
+            ember_osf_web.on('data', data => {
+                console.log(`${data}`); // Forces data to be a string
+            });
 
-    console.log(`Starting Databases ...`);
+            ember_osf_web.on('exit', data => {
+                console.log(`Ember is no longer being served!`)
+                return;
+            });
+        }),
 
-    const databases = spawn(`
-        docker-compose \
-            -f ./docker-compose.yml \
-            -f ./waterbutler/docker-compose.yml \
-            up \
-            postgres \
-            rabbitmq \
-            elasticsearch \
-            mongo
-    `, {
-        stdio: 'inherit',
-        shell: true
-    })
+        new Promise(resolve => {
 
-    databases.on('data', data => {
-        console.log(`${data}`); // Forces data to be a string
-    });
+            console.log(`Starting Databases ...`);
 
-    databases.on('exit', data => {
-        console.log(`Something happened to the services!`)
-    });
+            const databases = spawn(`
+                docker-compose \
+                    -f ./docker-compose.yml \
+                    -f ./waterbutler/docker-compose.yml \
+                    up \
+                    postgres \
+                    rabbitmq \
+                    elasticsearch \
+                    mongo
+            `, {
+                stdio: 'inherit',
+                shell: true
+            })
+
+            databases.on('data', data => {
+                console.log(`${data}`); // Forces data to be a string
+            });
+
+            databases.on('exit', data => {
+                console.log(`Something happened to the services!`)
+            });
+        })
+    ]);
 
     await new Promise((resolve, reject) => {
 
@@ -288,52 +312,62 @@ if (!fs.existsSync(cde_file)) {
         });
     });
 
-    const services = spawn(`
-        docker-compose \
-            -f ./docker-compose.yml \
-            -f ./waterbutler/docker-compose.yml \
-            up --no-deps \
-            mfr \
-            wb \
-            fakecas \
-            sharejs
-    `, {
-        stdio: 'inherit',
-        shell: true
-    })
+    await Promise.all([
+        new Promise(resolve => {
+    
+            const services = spawn(`
+                docker-compose \
+                    -f ./docker-compose.yml \
+                    -f ./waterbutler/docker-compose.yml \
+                    up --no-deps \
+                    mfr \
+                    wb \
+                    fakecas \
+                    sharejs
+            `, {
+                stdio: 'inherit',
+                shell: true
+            })
 
-    services.on('data', data => {
-        console.log(`${data}`); // Forces data to be a string
-    });
+            services.on('data', data => {
+                console.log(`${data}`); // Forces data to be a string
+            });
 
-    services.on('exit', data => {
-        console.log(`Something happened to the services!`)
-    });
+            services.on('exit', data => {
+                console.log(`Something happened to the services!`)
+                resolve();
+            });
 
-    const apps = spawn(`
-        docker-compose \
-            -f ./docker-compose.yml \
-            -f ./waterbutler/docker-compose.yml \
-            up -d --no-deps \
-            worker \
-            web \
-            api \
-            admin \
-            preprints \
-            registries \
-            unoconv \
-    `, {
-        stdio: 'inherit',
-        shell: true
-    });
-    apps.on('data', data => {
-        console.log(`${data}`); // Forces data to be a string
-    });
+        }),
 
-    apps.on('exit', data => {
-        console.log(`Assets Exited!`)
-        return;
-    });
+        new Promise(resolve => {
+
+            const apps = spawn(`
+                docker-compose \
+                    -f ./docker-compose.yml \
+                    -f ./waterbutler/docker-compose.yml \
+                    up -d --no-deps \
+                    worker \
+                    web \
+                    api \
+                    admin \
+                    preprints \
+                    registries \
+                    unoconv \
+            `, {
+                stdio: 'inherit',
+                shell: true
+            });
+            apps.on('data', data => {
+                console.log(`${data}`); // Forces data to be a string
+            });
+
+            apps.on('exit', data => {
+                console.log(`Assets Exited!`)
+                resolve()
+            });
+        }),
+    ]
 
 
 

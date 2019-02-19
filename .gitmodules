@@ -9,6 +9,7 @@
 [submodule "modular-file-renderer"]
 	path = modular-file-renderer
 	url = https://github.com/birdbrained/modular-file-renderer
+    branch = next
 [submodule "ember-osf-web"]
 	path = ember-osf-web
 	url = https://github.com/birdbrained/ember-osf-web.git
