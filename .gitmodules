@@ -1,36 +1,36 @@
 [submodule "osf.io"]
 	path = osf.io
-	url = https://github.com/birdbrained/osf.io
+	url = git@github.com:birdbrained/osf.io.git
     branch = next
 [submodule "waterbutler"]
 	path = waterbutler
-	url = https://github.com/birdbrained/waterbutler
+	url = git@github.com:birdbrained/waterbutler
     branch = next
 [submodule "modular-file-renderer"]
 	path = modular-file-renderer
-	url = https://github.com/birdbrained/modular-file-renderer
+	url = git@github.com:birdbrained/modular-file-renderer
     branch = next
 [submodule "ember-osf-web"]
 	path = ember-osf-web
-	url = https://github.com/birdbrained/ember-osf-web.git
+	url = git@github.com:birdbrained/ember-osf-web.git
     branch = next
 [submodule "isp"]
 	path = isp
-	url = https://github.com/birdbrained/isp.git
+	url = git@github.com:birdbrained/isp.git
     branch = next
 [submodule "jam-setup"]
 	path = jam-setup
-	url = https://github.com/birdbrained/jam-setup.git
+	url = git@github.com:birdbrained/jam-setup.git
     branch = next
 [submodule "jamdb"]
 	path = jamdb
-	url = https://github.com/birdbrained/jamdb
+	url = git@github.com:birdbrained/jamdb.git
     branch = next
 [submodule "experimenter"]
 	path = experimenter
-	url = https://github.com/birdbrained/experimenter.git
+	url = git@github.com:birdbrained/experimenter.git
     branch = next
 [submodule "cas-overlay"]
 	path = cas-overlay
-	url = https://github.com/birdbrained/cas-overlay.git
+	url = git@github.com:birdbrained/cas-overlay.git
     branch = next
